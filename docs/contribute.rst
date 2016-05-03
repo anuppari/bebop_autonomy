@@ -19,12 +19,25 @@ List of Developers
 
 - `Mani Monajjemi <https://github.com/mani-monaj>`_
 
+.. _sec-contribs:
+
 List of Contributers
 ====================
 
-- `Anup Parikh` <https://github.com/anuppari>`_
+- `Anup Parikh <https://github.com/anuppari>`_
 
   - `#19 Add bebop ip address as ROS parameter <https://github.com/AutonomyLab/bebop_autonomy/pull/19>`_
+
+- `Jacob Perron <https://github.com/jacobperron>`_
+
+  - `#26 Bebop now follows right-hand rule <https://github.com/AutonomyLab/bebop_autonomy/pull/26>`_
+
+- `Jake Bruce <http://www.sfu.ca/~jakeb/>`_
+
+- `Charuvahan Adhivarahan <http://www.chartoin.com/>`_
+
+  - `#30 Fixed breaking build due to legac macro usage <https://github.com/AutonomyLab/bebop_autonomy/pull/34>`_
+
 
 Acknowledgments
 ================

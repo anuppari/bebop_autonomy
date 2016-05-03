@@ -2,13 +2,17 @@
 Coordinate System Conventions
 *****************************
 
-ROS Standard Message Types (i.e Twist) - REP 103
-================================================
+.. _sec-coords:
+
+ROS Standard Message Types (i.e Twist, Odometery) - REP 103
+===========================================================
 
 +x    forward
 +y    left
 +z    up
 +yaw  CCW
+
+- More information: http://www.ros.org/reps/rep-0103.html
 
 Bebop Velocities
 ================

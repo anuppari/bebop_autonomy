@@ -61,6 +61,7 @@ namespace util
     ros::console::levels::Debug};
 
   static const double eps = 1.0e-6;
+  static const double deg2rad = 3.14159265 / 180.0;
 
   static char bebop_err_str[BEBOP_ERR_STR_SZ];
 
@@ -74,6 +75,8 @@ namespace util
     t.angular.z = 0.0;
   }
 
+  // True: Equal, false otherwise
+  // TODO(mani-monaj): refactor
   inline bool CompareTwists(const geometry_msgs::Twist& lhs, const geometry_msgs::Twist& rhs)
   {
     return (fabs(lhs.linear.x - rhs.linear.x) < eps) &&
@@ -95,12 +98,15 @@ class BebopDriverNodelet : public nodelet::Nodelet
 {
 private:
   boost::shared_ptr<bebop_driver::Bebop> bebop_ptr_;
-  boost::shared_ptr<boost::thread> mainloop_thread_ptr_;
+  boost::shared_ptr<boost::thread> camera_pub_thread_ptr_;
+  boost::shared_ptr<boost::thread> aux_thread_ptr_;
 
-  geometry_msgs::Twist bebop_twist;
-  geometry_msgs::Twist prev_bebop_twist;
-  geometry_msgs::Twist camera_twist;
-  geometry_msgs::Twist prev_camera_twist;
+  geometry_msgs::Twist prev_bebop_twist_;
+  ros::Time prev_twist_stamp_;
+  boost::mutex twist_mutex_;
+
+  geometry_msgs::Twist camera_twist_;
+  geometry_msgs::Twist prev_camera_twist_;
 
   ros::Subscriber cmd_vel_sub_;
   ros::Subscriber camera_move_sub_;
@@ -110,6 +116,12 @@ private:
   ros::Subscriber flattrim_sub_;
   ros::Subscriber navigatehome_sub_;
   ros::Subscriber animation_sub_;
+  ros::Subscriber snapshot_sub_;
+  ros::Subscriber toggle_recording_sub_;
+
+  ros::Publisher odom_pub_;
+  ros::Publisher camera_joint_pub_;
+  ros::Publisher gps_fix_pub_;
 
   boost::shared_ptr<camera_info_manager::CameraInfoManager> cinfo_manager_ptr_;
   boost::shared_ptr<image_transport::ImageTransport> image_transport_ptr_;
@@ -121,10 +133,16 @@ private:
   boost::shared_ptr<dynamic_reconfigure::Server<bebop_driver::BebopArdrone3Config> > dynr_serv_ptr_;
 
   // Params (not dynamically reconfigurable, persistent)
-  std::string param_frame_id_;
+  std::string param_camera_frame_id_;
+  std::string param_odom_frame_id_;
+  bool param_publish_odom_tf_;
+  double param_cmd_vel_timeout_;
 
   // This runs in its own context
   void CameraPublisherThread();
+
+  // Safety monitor + ROS specfic publishers (TF, Odom, etc)
+  void AuxThread();
 
   void CmdVelCallback(const geometry_msgs::TwistConstPtr& twist_ptr);
   void CameraMoveCallback(const geometry_msgs::TwistConstPtr& twist_ptr);
@@ -134,12 +152,14 @@ private:
   void FlatTrimCallback(const std_msgs::EmptyConstPtr& empty_ptr);
   void NavigateHomeCallback(const std_msgs::BoolConstPtr& start_stop_ptr);
   void FlipAnimationCallback(const std_msgs::UInt8ConstPtr& animid_ptr);
+  void TakeSnapshotCallback(const std_msgs::EmptyConstPtr& empty_ptr);
+  void ToggleRecordingCallback(const std_msgs::BoolConstPtr& toggle_ptr);
 
   void ParamCallback(bebop_driver::BebopArdrone3Config &config, uint32_t level);
 
 public:
   BebopDriverNodelet();
-  ~BebopDriverNodelet();
+  virtual ~BebopDriverNodelet();
 
   virtual void onInit();
 };
